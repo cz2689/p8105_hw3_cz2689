@@ -8,6 +8,21 @@ output: github_document
 ```{r, message = FALSE}
 library(tidyverse)
 library(readxl)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
 ```
 
 # Problem 2
@@ -23,7 +38,7 @@ p2 = read_csv(file = "./data/accel_data.csv") %>%
             day = str_to_lower(day),
             weekend = ifelse(day == "saturday"|day == "saturday", "TRUE", "FALSE"),
             weekend = as.logical(weekend),
-            )
+            min_of_the_day = as.integer(min_of_the_day))
 ```
 
 ## Describe the resulting dataset. 
@@ -31,16 +46,47 @@ This data set is about five weeks of accelerometer data collected on a 63 year-o
 
 ## Create a new table showing total activity for each day
 ```{r, message = FALSE}
-  p2 %>% 
+p2 %>% 
   group_by(week, day) %>% 
   summarise(activity_perday = sum(activity)) %>% 
   pivot_wider(
     names_from = day,
     values_from = activity_perday) %>% 
+    select(monday, tuesday, wednesday, thursday, friday, saturday, sunday) %>% 
     knitr::kable(digits = 1)
 ```
 As we can see from the table, there are days where this individual have a lot of activity and days this individual has much less activity. Also, there are two days where this individual doesn't have activity (on Saturday of week 4 and 5). For every minute of the day, the individual only have 1 activity per minutes which probably means this individual doesn't carry this device with him.
  
+## Making a plot
+```{r, message = FALSE}
+ggplot(p2, aes(x = min_of_the_day, y = activity, color = day)) +
+    geom_line()
+```
+
+As we can see from the plot, this person lifestyle is pretty consistent. The lines aggregated around some minutes. He gets up around 440 minutes (about 7:20 am) of the day and goes to sleep around 1375 minutes (about 10:54 pm) of the day. Most of his activity occurs at the morning and evening. His activity is lower during noon and the late afternoon. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
