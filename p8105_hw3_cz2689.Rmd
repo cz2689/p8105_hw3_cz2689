@@ -17,17 +17,30 @@ library(readxl)
 p2 = read_csv(file = "./data/accel_data.csv") %>% 
      janitor::clean_names() %>% 
      pivot_longer(activity_1:activity_1440,
-                  names_to = "minutes_of_the_day",
+                  names_to = "min_of_the_day",
                   values_to = "activity") %>% 
-     mutate(minutes_of_the_day = str_sub(minutes_of_the_day, 10),
+     mutate(min_of_the_day = str_sub(min_of_the_day, 10),
             day = str_to_lower(day),
-            weekend = ifelse(day == "saturday"|day == "saturday", "YES", "NO"))
+            weekend = ifelse(day == "saturday"|day == "saturday", "TRUE", "FALSE"),
+            weekend = as.logical(weekend),
+            )
 ```
 
+## Describe the resulting dataset. 
+This data set is about five weeks of accelerometer data collected on a 63 year-old male with BMI 25. So far, I have import the data into R. And use `janitor::clean_names()` to clean up variables names. Now, this data set has `r ncol(p2)` variables and `r nrow(p2)` observations. It includes variables: `r ls(p2)`. I created a new logical variable `weekend`. It is true when the `day` variable equals to Sunday or Saturday, and FALSE when the `day` variable equal to weekdays. 
 
-
-
-
+## Create a new table showing total activity for each day
+```{r, message = FALSE}
+  p2 %>% 
+  group_by(week, day) %>% 
+  summarise(activity_perday = sum(activity)) %>% 
+  pivot_wider(
+    names_from = day,
+    values_from = activity_perday) %>% 
+    knitr::kable(digits = 1)
+```
+As we can see from the table, there are days where this individual have a lot of activity and days this individual has much less activity. Also, there are two days where this individual doesn't have activity (on Saturday of week 4 and 5). For every minute of the day, the individual only have 1 activity per minutes which probably means this individual doesn't carry this device with him.
+ 
 
 
 
