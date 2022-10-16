@@ -8,6 +8,7 @@ output: github_document
 ```{r, message = FALSE}
 library(tidyverse)
 library(readxl)
+library(p8105.datasets)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -65,14 +66,48 @@ ggplot(p2, aes(x = min_of_the_day, y = activity, color = day)) +
 
 As we can see from the plot, this person lifestyle is pretty consistent. The lines aggregated around some minutes. He gets up around 440 minutes (about 7:20 am) of the day and goes to sleep around 1375 minutes (about 10:54 pm) of the day. Most of his activity occurs at the morning and evening. His activity is lower during noon and the late afternoon. 
 
+# Problem 3
 
+## Data import
+```{r, message = FALSE}
+data("ny_noaa")
+p3 = janitor::clean_names(ny_noaa) %>% 
+  separate(date, c("year", "month", "day"), convert = TRUE) %>% 
+  mutate(prcp = prcp*0.1,
+         tmax = as.numeric(tmax),
+         tmax = tmax*0.1,
+         tmin = as.numeric(tmin),
+         tmin = tmin*0.1)
 
+```
 
+### MODE function
+```{r, message = FALSE}
+Mode <- function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+```
 
+## Describe the final data set
+This data set is about weather data. It has `r ncol(p3)` variables and `r nrow(p3)` observations. It includes variables: `r ls(p3)`. Since each weather station only collect a subset of all the variables, the resulting data contains tons of missing value. When generating plot or calculating certain values or making statistical inference, the missing value is going to be a problem. The final data set has unit mm for precipitation `prcp`, snowfall `snow`, snow depth `snwd`, and degree C for maximum temperature `tmax`, minimum temperature `tmin`. For snowfall, the most commonly observed values is `r Mode(p3$snow)` mm. The reason is that the weather in NY is pretty distinct. It only snow in certain day during the winter. For most other day, there is no snow at all.
 
+## Making plots
+```{r}
+p3 %>% 
+  group_by(id, year, month) %>% 
+  mutate(average_tmax = mean(tmax, na.rm = TRUE)) %>%
+  filter(month == 1 | month == 7) %>% 
+  ggplot(aes(x = year, y = average_tmax, 
+             group = id, color = month)) + geom_line() + geom_point() + facet_grid(. ~ month)
+```
 
+As we can see from the resulting plot, the average_tmax seems to be increasing across years both in January and July. We do see outliers. Also, average_tmax in July is much higher than in January. Every station has a similar trend of temperature change. 
 
-
+```{r}
+p3 %>% 
+  ggplot(aes(x = tmin, y = tmax)) + geom_hex()
+```
 
 
 
